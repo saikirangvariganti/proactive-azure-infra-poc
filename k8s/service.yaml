@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proactive-api-svc
+  namespace: app
+  labels:
+    app: proactive-api
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: proactive-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: proactive-api-ingress
+  namespace: app
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - api.proactive-poc.example.com
+      secretName: proactive-api-tls
+  rules:
+    - host: api.proactive-poc.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: proactive-api-svc
+                port:
+                  number: 80

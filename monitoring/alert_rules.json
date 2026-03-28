@@ -1,0 +1,311 @@
+{
+  "version": "1.0.0",
+  "description": "Azure Monitor alert rules for Proactive Azure Infrastructure POC",
+  "resource_group": "rg-proactive-poc",
+  "location": "uksouth",
+  "alert_rules": [
+    {
+      "name": "alert-aks-cpu-high",
+      "description": "AKS node CPU utilisation exceeds 85% for 5 minutes",
+      "severity": 2,
+      "enabled": true,
+      "frequency": "PT1M",
+      "window_size": "PT5M",
+      "resource_type": "Microsoft.ContainerService/managedClusters",
+      "criteria": {
+        "metric_namespace": "Microsoft.ContainerService/managedClusters",
+        "metric_name": "node_cpu_usage_percentage",
+        "aggregation": "Average",
+        "operator": "GreaterThan",
+        "threshold": 85,
+        "dimensions": [
+          {
+            "name": "node",
+            "operator": "Include",
+            "values": ["*"]
+          }
+        ]
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "aks",
+        "alert_type": "performance",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-aks-memory-high",
+      "description": "AKS node memory utilisation exceeds 85% for 5 minutes",
+      "severity": 2,
+      "enabled": true,
+      "frequency": "PT1M",
+      "window_size": "PT5M",
+      "resource_type": "Microsoft.ContainerService/managedClusters",
+      "criteria": {
+        "metric_namespace": "Microsoft.ContainerService/managedClusters",
+        "metric_name": "node_memory_working_set_percentage",
+        "aggregation": "Average",
+        "operator": "GreaterThan",
+        "threshold": 85,
+        "dimensions": [
+          {
+            "name": "node",
+            "operator": "Include",
+            "values": ["*"]
+          }
+        ]
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "aks",
+        "alert_type": "performance",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-aks-pod-restart-high",
+      "description": "AKS pod restart count exceeds 10 within 15 minutes — possible CrashLoopBackOff",
+      "severity": 1,
+      "enabled": true,
+      "frequency": "PT5M",
+      "window_size": "PT15M",
+      "resource_type": "Microsoft.ContainerService/managedClusters",
+      "criteria": {
+        "metric_namespace": "Microsoft.ContainerService/managedClusters",
+        "metric_name": "pod_restart_count",
+        "aggregation": "Total",
+        "operator": "GreaterThan",
+        "threshold": 10
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "aks",
+        "alert_type": "reliability",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-aks-node-not-ready",
+      "description": "One or more AKS nodes are in NotReady state",
+      "severity": 1,
+      "enabled": true,
+      "frequency": "PT1M",
+      "window_size": "PT5M",
+      "resource_type": "Microsoft.ContainerService/managedClusters",
+      "criteria": {
+        "metric_namespace": "Microsoft.ContainerService/managedClusters",
+        "metric_name": "kube_node_status_condition",
+        "aggregation": "Average",
+        "operator": "LessThan",
+        "threshold": 1,
+        "dimensions": [
+          {
+            "name": "status2",
+            "operator": "Include",
+            "values": ["Ready"]
+          }
+        ]
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "aks",
+        "alert_type": "availability",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-keyvault-throttled",
+      "description": "Key Vault API throttling detected — service availability risk",
+      "severity": 2,
+      "enabled": true,
+      "frequency": "PT5M",
+      "window_size": "PT15M",
+      "resource_type": "Microsoft.KeyVault/vaults",
+      "criteria": {
+        "metric_namespace": "Microsoft.KeyVault/vaults",
+        "metric_name": "ServiceApiResult",
+        "aggregation": "Count",
+        "operator": "GreaterThan",
+        "threshold": 100,
+        "dimensions": [
+          {
+            "name": "StatusCode",
+            "operator": "Include",
+            "values": ["429"]
+          }
+        ]
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "security",
+        "alert_type": "availability",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-keyvault-access-denied",
+      "description": "More than 5 Key Vault access denied events in 5 minutes — possible security incident",
+      "severity": 1,
+      "enabled": true,
+      "frequency": "PT1M",
+      "window_size": "PT5M",
+      "resource_type": "Microsoft.KeyVault/vaults",
+      "criteria": {
+        "metric_namespace": "Microsoft.KeyVault/vaults",
+        "metric_name": "ServiceApiResult",
+        "aggregation": "Count",
+        "operator": "GreaterThan",
+        "threshold": 5,
+        "dimensions": [
+          {
+            "name": "StatusCode",
+            "operator": "Include",
+            "values": ["403"]
+          }
+        ]
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "security",
+        "alert_type": "security",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-storage-availability",
+      "description": "Storage account availability drops below 99% — SLA breach risk",
+      "severity": 2,
+      "enabled": true,
+      "frequency": "PT5M",
+      "window_size": "PT15M",
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "criteria": {
+        "metric_namespace": "Microsoft.Storage/storageAccounts",
+        "metric_name": "Availability",
+        "aggregation": "Average",
+        "operator": "LessThan",
+        "threshold": 99
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "storage",
+        "alert_type": "availability",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-storage-ingress-spike",
+      "description": "Storage ingress exceeds 100 GB in 1 hour — potential data exfiltration",
+      "severity": 1,
+      "enabled": true,
+      "frequency": "PT15M",
+      "window_size": "PT1H",
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "criteria": {
+        "metric_namespace": "Microsoft.Storage/storageAccounts",
+        "metric_name": "Ingress",
+        "aggregation": "Total",
+        "operator": "GreaterThan",
+        "threshold": 107374182400
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "storage",
+        "alert_type": "security",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-app-service-5xx",
+      "description": "App Service HTTP 5xx error rate exceeds 5% over 5 minutes",
+      "severity": 2,
+      "enabled": true,
+      "frequency": "PT1M",
+      "window_size": "PT5M",
+      "resource_type": "Microsoft.Web/sites",
+      "criteria": {
+        "metric_namespace": "Microsoft.Web/sites",
+        "metric_name": "Http5xx",
+        "aggregation": "Total",
+        "operator": "GreaterThan",
+        "threshold": 10
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "app_service",
+        "alert_type": "reliability",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-app-service-response-time",
+      "description": "App Service average response time exceeds 3 seconds",
+      "severity": 3,
+      "enabled": true,
+      "frequency": "PT5M",
+      "window_size": "PT15M",
+      "resource_type": "Microsoft.Web/sites",
+      "criteria": {
+        "metric_namespace": "Microsoft.Web/sites",
+        "metric_name": "AverageResponseTime",
+        "aggregation": "Average",
+        "operator": "GreaterThan",
+        "threshold": 3
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "app_service",
+        "alert_type": "performance",
+        "managed_by": "terraform"
+      }
+    },
+    {
+      "name": "alert-log-analytics-query-cost",
+      "description": "Log Analytics daily data ingestion exceeds 5 GB — cost governance",
+      "severity": 3,
+      "enabled": true,
+      "frequency": "PT1H",
+      "window_size": "P1D",
+      "resource_type": "Microsoft.OperationalInsights/workspaces",
+      "criteria": {
+        "metric_namespace": "Microsoft.OperationalInsights/workspaces",
+        "metric_name": "DataIngestion",
+        "aggregation": "Total",
+        "operator": "GreaterThan",
+        "threshold": 5368709120
+      },
+      "action_groups": ["ag-proactive-poc-critical"],
+      "tags": {
+        "component": "monitoring",
+        "alert_type": "cost",
+        "managed_by": "terraform"
+      }
+    }
+  ],
+  "action_groups": [
+    {
+      "name": "ag-proactive-poc-critical",
+      "short_name": "critical",
+      "email_receivers": [
+        {
+          "name": "ops-team",
+          "email_address": "ops-team@proactive-poc.com",
+          "use_common_alert_schema": true
+        }
+      ],
+      "webhook_receivers": [
+        {
+          "name": "teams-webhook",
+          "service_uri": "https://teams.microsoft.com/l/channel/webhook/placeholder",
+          "use_common_alert_schema": true
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "created_by": "Sai Kiran Goud Variganti",
+    "purpose": "Azure Infrastructure POC — Proactive Appointments",
+    "certifications_aligned": ["AZ-104", "AZ-400"],
+    "last_updated": "2026-03-28"
+  }
+}

@@ -1,0 +1,438 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_AZURE_MONITOR",
+      "label": "Azure Monitor",
+      "description": "Azure Monitor data source",
+      "type": "datasource",
+      "pluginId": "grafana-azure-monitor-datasource",
+      "pluginName": "Azure Monitor"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "grafana-azure-monitor-datasource",
+      "name": "Azure Monitor",
+      "version": "1.0.0"
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Azure Infrastructure Platform Observability — AKS, App Service, Key Vault, Storage — Proactive Appointments POC",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 100,
+      "title": "AKS Cluster Health",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "red", "value": 85}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 1},
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "title": "AKS CPU Utilisation (%)",
+      "type": "gauge",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.ContainerService/managedClusters",
+            "resourceName": "aks-proactive-poc-dev",
+            "metricName": "node_cpu_usage_percentage",
+            "aggregation": "Average",
+            "timeGrain": "auto"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 75},
+              {"color": "red", "value": 90}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "gridPos": {"h": 8, "w": 6, "x": 6, "y": 1},
+      "id": 2,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "title": "AKS Memory Utilisation (%)",
+      "type": "gauge",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.ContainerService/managedClusters",
+            "resourceName": "aks-proactive-poc-dev",
+            "metricName": "node_memory_working_set_percentage",
+            "aggregation": "Average",
+            "timeGrain": "auto"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisLabel": "Pod Restarts",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "id": 3,
+      "options": {"legend": {"calcs": ["max"], "displayMode": "table", "placement": "bottom"}},
+      "title": "AKS Pod Restarts (1h window)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.ContainerService/managedClusters",
+            "resourceName": "aks-proactive-poc-dev",
+            "metricName": "pod_restart_count",
+            "aggregation": "Total",
+            "timeGrain": "PT5M"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9},
+      "id": 101,
+      "title": "App Service Performance",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 15},
+          "unit": "ms"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+      "id": 4,
+      "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"}},
+      "title": "App Service Response Time (ms)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.Web/sites",
+            "resourceName": "app-proactive-poc-dev",
+            "metricName": "AverageResponseTime",
+            "aggregation": "Average",
+            "timeGrain": "PT1M"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 15},
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Http5xx"},
+            "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+      "id": 5,
+      "options": {"legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"}},
+      "title": "App Service HTTP Status Codes",
+      "type": "timeseries",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.Web/sites",
+            "resourceName": "app-proactive-poc-dev",
+            "metricName": "Http5xx",
+            "aggregation": "Total",
+            "timeGrain": "PT1M"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18},
+      "id": 102,
+      "title": "Security — Key Vault & Defender",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 99},
+              {"color": "green", "value": 99.9}
+            ]
+          },
+          "unit": "percent",
+          "min": 95,
+          "max": 100
+        }
+      },
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 19},
+      "id": 6,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "title": "Key Vault Availability (%)",
+      "type": "gauge",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.KeyVault/vaults",
+            "resourceName": "kv-proactive-poc-dev",
+            "metricName": "Availability",
+            "aggregation": "Average",
+            "timeGrain": "PT5M"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 15},
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "403"},
+            "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+          }
+        ]
+      },
+      "gridPos": {"h": 8, "w": 16, "x": 8, "y": 19},
+      "id": 7,
+      "options": {"legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"}},
+      "title": "Key Vault API Calls by Status Code",
+      "type": "timeseries",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.KeyVault/vaults",
+            "resourceName": "kv-proactive-poc-dev",
+            "metricName": "ServiceApiHit",
+            "aggregation": "Count",
+            "timeGrain": "PT5M",
+            "dimensionFilters": [
+              {"dimension": "StatusCode", "operator": "eq", "filter": "*"}
+            ]
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 27},
+      "id": 103,
+      "title": "Storage & Cost",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 15},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 28},
+      "id": 8,
+      "options": {"legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"}},
+      "title": "Storage Ingress / Egress (bytes)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.Storage/storageAccounts",
+            "resourceName": "stproactivepocdev",
+            "metricName": "Ingress",
+            "aggregation": "Total",
+            "timeGrain": "PT15M"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    },
+    {
+      "datasource": "${DS_AZURE_MONITOR}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"lineWidth": 2, "fillOpacity": 15},
+          "unit": "currencyGBP"
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 28},
+      "id": 9,
+      "options": {"legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"}},
+      "title": "Azure Daily Cost (GBP) by Resource Type",
+      "type": "timeseries",
+      "targets": [
+        {
+          "azureMonitor": {
+            "resourceGroup": "rg-proactive-poc",
+            "resourceType": "Microsoft.CostManagement/query",
+            "metricName": "UsageCost",
+            "aggregation": "Total",
+            "timeGrain": "P1D"
+          },
+          "datasource": "${DS_AZURE_MONITOR}",
+          "queryType": "Azure Monitor"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["azure", "aks", "infrastructure", "proactive-poc", "platform-engineering"],
+  "templating": {
+    "list": [
+      {
+        "current": {"selected": false, "text": "rg-proactive-poc", "value": "rg-proactive-poc"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Resource Group",
+        "multi": false,
+        "name": "resource_group",
+        "options": [{"selected": true, "text": "rg-proactive-poc", "value": "rg-proactive-poc"}],
+        "query": "rg-proactive-poc",
+        "type": "custom"
+      },
+      {
+        "current": {"selected": false, "text": "dev", "value": "dev"},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          {"selected": true, "text": "dev", "value": "dev"},
+          {"selected": false, "text": "staging", "value": "staging"},
+          {"selected": false, "text": "prod", "value": "prod"}
+        ],
+        "query": "dev,staging,prod",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {"from": "now-3h", "to": "now"},
+  "timepicker": {},
+  "timezone": "Europe/London",
+  "title": "Proactive Azure Infrastructure — Platform Dashboard",
+  "uid": "proactive-azure-infra-poc",
+  "version": 1,
+  "weekStart": "monday"
+}
